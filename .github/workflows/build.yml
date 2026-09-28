@@ -1,0 +1,40 @@
+name: Insider dashboard
+on:
+  push:
+    paths: [notices.txt, manual_entries.csv, insider_monitor.py]
+  issues:
+    types: [opened]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+jobs:
+  build:
+    if: >
+      github.event_name != 'issues' ||
+      (startsWith(github.event.issue.title, 'NOTICE') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install yfinance anthropic pandas numpy
+      - name: Build dashboard
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTICE_BODY: ${{ github.event_name == 'issues' && github.event.issue.body || '' }}
+        run: python insider_monitor.py
+      - name: Commit results
+        run: |
+          git config user.name "insider-dashboard-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Rebuild dashboard" || echo "nothing to commit"
+          git push
+      - name: Close issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue close ${{ github.event.issue.number }} -c "Dashboard updated." -R ${{ github.repository }}
