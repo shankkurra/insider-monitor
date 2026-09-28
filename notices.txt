@@ -1,4 +1,2 @@
 # PASTE NOTICES BELOW THIS LINE - one per line, then commit.
 # The dashboard rebuilds automatically (~2 min) and this file resets itself.
-
-Hudson Technologies Inc. (NASDAQ: HDSN) — Form 4: Hartree Partners LP, 10% owner, purchased 764,202 shares between June 30 and July 2, 2026 at $5.68–$5.97.
